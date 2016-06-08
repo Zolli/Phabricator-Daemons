@@ -1,0 +1,34 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: phabricator-notification
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: PhabricatorNotification
+# Description: Manage Phabricator Aphlict notification server
+#
+### END INIT INFO
+
+## Configuration
+NOTIFICATION_USER=zolli
+PHABRICATOR_HOME=/var/www/phabricator/location/phabricator
+
+case "$1" in
+ start)
+   su $NOTIFICATION_USER -c $PHABRICATOR_HOME'/bin/aphlict restart'
+   ;;
+ stop)
+   su $NOTIFICATION_USER -c $PHABRICATOR_HOME'/bin/aphlict stop'
+   ;;
+ restart)
+   su $NOTIFICATION_USER -c $PHABRICATOR_HOME'/bin/aphlict restart'
+   ;;
+ status)
+   su $NOTIFICATION_USER -c $PHABRICATOR_HOME'/bin/aphlict status'
+   ;;
+ *)
+   echo "Usage: service phabricator-notification {start|stop|restart|status}" >&2
+   exit 3
+   ;;
+esac

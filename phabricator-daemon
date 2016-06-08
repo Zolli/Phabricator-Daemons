@@ -1,0 +1,34 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: phabricator-daemon
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: PhabricatorDaemon
+# Description: Manage Phabricator PHD daemon
+#
+### END INIT INFO
+
+## Configuration
+DAEMON_USER=root
+PHABRICATOR_HOME=/var/www/phabricator/location/phabricator
+
+case "$1" in
+ start)
+   su $DAEMON_USER -c $PHABRICATOR_HOME'/bin/phd restart'
+   ;;
+ stop)
+   su $DAEMON_USER -c $PHABRICATOR_HOME'/bin/phd stop'
+   ;;
+ restart)
+   su $DAEMON_USER -c $PHABRICATOR_HOME'/bin/phd restart'
+   ;;
+ status)
+   su $DAEMON_USER -c $PHABRICATOR_HOME'/bin/phd status'
+   ;;
+ *)
+   echo "Usage: service phabricator-daemon {start|stop|restart|status}" >&2
+   exit 3
+   ;;
+esac

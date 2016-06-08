@@ -1,0 +1,66 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: phabricator-sshd
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: PhabricatorSSHD
+# Description: Manage Phabricator SSHD instance for SSH repository hosting
+#
+### END INIT INFO
+
+## Configuration
+USER=root
+SSHD_BIN=/usr/sbin/sshd
+PHABRICATOR_SSHD_CONFIG_NAME=sshd_config.phabricator
+PHABRICATOR_SSHD_CONFIG_LOCATION=/etc/ssh/
+
+PROCESS_PID=$(ps aux | grep $PHABRICATOR_SSHD_CONFIG_NAME | grep -v grep | awk '{print $2}')
+
+##Check for running process. If the PROCESS_PID variable is not empty, its mean that we give a valid PID
+if [ !  "$PROCESS_PID" ]; then
+   SSHD_RUNNING=false
+else
+   SSHD_RUNNING=true
+fi
+
+case "$1" in
+ start)
+   if [ $SSHD_RUNNING = "false" ]; then
+      su $USER -c $SSHD_BIN' -f '$PHABRICATOR_SSHD_CONFIG_LOCATION$PHABRICATOR_SSHD_CONFIG_NAME
+
+      PROCESS_PID=$(ps aux | grep $PHABRICATOR_SSHD_CONFIG_NAME | grep -v grep | awk '{print $2}')
+      echo "Started Phabricatod SSH agent (PID: $PROCESS_PID)";
+   else
+      echo "Process is already running on PID: $PROCESS_PID"
+   fi
+   ;;
+ stop)
+   if [ $SSHD_RUNNING = "true" ]; then
+      su $USER -c 'kill '$PROCESS_PID
+      echo "Phabricator SSH agent ($PROCESS_PID) is stopped"
+   else
+      echo "Phabricator SSH agent is not running"
+   fi
+   ;;
+ restart)
+   su $USER -c 'kill '$PROCESS_PID' 2>&1 /dev/null'
+   su $USER -c $SSHD_BIN' -f '$PHABRICATOR_SSHD_CONFIG_LOCATION$PHABRICATOR_SSHD_CONFIG_NAME
+
+   PROCESS_PID=$(ps aux | grep $PHABRICATOR_SSHD_CONFIG_NAME | grep -v grep | awk '{print $2}')
+   echo "Started Phabricatod SSH agent (PID: $PROCESS_PID)";
+   ;;
+ status)
+   if [ $SSHD_RUNNING = "true" ]; then
+      echo "Phabricator SSH agent is up and running (PID: $PROCESS_PID)"
+   else
+      echo "Phabricator SSH agent is not running"
+   fi
+
+   ;;
+ *)
+   echo "Usage: service phabricator-sshd {start|stop|restart|status}" >&2
+   exit 3
+   ;;
+esac
